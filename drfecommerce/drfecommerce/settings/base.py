@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     # External Packages
     "rest_framework",
     # Internal Packages
+    "drfecommerce.product",
 ]
 
 MIDDLEWARE = [
