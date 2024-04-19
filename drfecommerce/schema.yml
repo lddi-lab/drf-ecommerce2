@@ -41,6 +41,25 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
           description: ''
+  /api/product/:
+    get:
+      operationId: api_product_list
+      description: A simple Viewset for viewing all products
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
   /api/schema/:
     get:
       operationId: api_schema_retrieve
@@ -230,6 +249,28 @@ components:
       - name
       - rght
       - tree_id
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        brand:
+          $ref: '#/components/schemas/Brand'
+        category:
+          $ref: '#/components/schemas/Category'
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        is_digital:
+          type: boolean
+      required:
+      - brand
+      - category
+      - id
+      - name
   securitySchemes:
     basicAuth:
       type: http
