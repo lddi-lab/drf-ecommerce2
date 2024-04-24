@@ -60,12 +60,15 @@ class ProductLine(models.Model):
     order = OrderField(unique_for_field="product", blank=True)
     objects = ActiveQueryset.as_manager()
 
-    def clean_fields(self, exclude=None):
-        super().clean_fields(exclude=exclude)
+    def clean(self, exclude=None):
         qs = ProductLine.objects.filter(product=self.product)
         for obj in qs:
             if self.id != obj.id and self.order == obj.order:
                 raise ValidationError("Duplicate value.")
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super(ProductLine, self).save(*args, **kwargs)
+
     def __str__(self):
-        return str(self.order)
+        return str(self.sku)
