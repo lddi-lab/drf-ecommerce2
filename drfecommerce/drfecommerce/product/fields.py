@@ -27,7 +27,9 @@ class OrderField(models.PositiveIntegerField):
             f.name for f in self.model._meta.get_fields()
         ]:
             return [
-                checks.Error("OrdeField entered does not match an existing model field")
+                checks.Error(
+                    "OrderField entered does not match an existing model field"
+                )
             ]
         return []
 
