@@ -133,3 +133,24 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return str(self.url)
+
+
+class ProductType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+
+class ProductTypeAttribute(model.Model):
+
+    product_type = models.ForeignKey(
+        ProductType,
+        on_delete=models.CASCADE,
+        related_name="product_attribute_attribute_pt",
+    )
+    attribute = models.ForeignKey(
+        Attribute,
+        on_delete=models.CASCADE,
+        related_name="product_attribute_attribute_a",
+    )
+
+    class Meta:
+        unique_together = ("product_type", "attribute")
