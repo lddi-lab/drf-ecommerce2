@@ -82,6 +82,7 @@ class ProductLine(models.Model):
         through="ProductlineAttributeValue",
         related_name="product_line_attribute_value",
     )
+    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
     objects = ActiveQueryset.as_manager()
 
     def clean(self, exclude=None):
@@ -137,9 +138,15 @@ class ProductImage(models.Model):
 
 class ProductType(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    attribute = models.ManyToManyField(
+        Attribute, through="ProductTypeAttribute", related_name="product_type_attribute"
+    )
+
+    def __str__(self):
+        return str(self.name)
 
 
-class ProductTypeAttribute(model.Model):
+class ProductTypeAttribute(models.Model):
 
     product_type = models.ForeignKey(
         ProductType,
