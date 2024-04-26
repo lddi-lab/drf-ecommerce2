@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from .models import Category, Brand, Product
 from .serializers import CategorySerializer, BrandSerializer, ProductSerializer
 
-from django.db import connection
-from pygments import highlight
-from pygments.formatters import TerminalFormatter
-from pygments.lexers import SqlLexer
-from sqlparse import format
+# from django.db import connection
+# from pygments import highlight
+# from pygments.formatters import TerminalFormatter
+# from pygments.lexers import SqlLexer
+# from sqlparse import format
 
 
 class CategoryViewSet(viewsets.ViewSet):
@@ -57,11 +57,11 @@ class ProductViewSet(viewsets.ViewSet):
         )
         data = Response(serializer.data)
 
-        q = list(connection.queries)
-        print(len(q))
-        for qs in q:
-            sqlformatted = format(str(qs["sql"]), reindent=True)
-            print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+        # q = list(connection.queries)
+        # print(len(q))
+        # for qs in q:
+        #     sqlformatted = format(str(qs["sql"]), reindent=True)
+        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
         return data
 
     @extend_schema(responses=ProductSerializer)

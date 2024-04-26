@@ -43,7 +43,7 @@ class Product(models.Model):
         "Category", on_delete=models.SET_NULL, null=True, blank=True
     )
     is_active = models.BooleanField(default=False)
-
+    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
     objects = ActiveQueryset.as_manager()
 
     def __str__(self):
@@ -82,7 +82,6 @@ class ProductLine(models.Model):
         through="ProductlineAttributeValue",
         related_name="product_line_attribute_value",
     )
-    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
     objects = ActiveQueryset.as_manager()
 
     def clean(self, exclude=None):
@@ -133,7 +132,7 @@ class ProductLineAttributeValue(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        return super(ProductLine, self).save(*args, **kwargs)
+        return super(ProductLineAttributeValue, self).save(*args, **kwargs)
 
 
 class ProductImage(models.Model):
