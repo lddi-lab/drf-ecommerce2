@@ -1,7 +1,7 @@
-from typing import Collection
 from django.core.exceptions import ValidationError
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+
 from .fields import OrderField
 
 
@@ -43,7 +43,9 @@ class Product(models.Model):
         "Category", on_delete=models.SET_NULL, null=True, blank=True
     )
     is_active = models.BooleanField(default=False)
-    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
+    product_type = models.ForeignKey(
+        "ProductType", on_delete=models.PROTECT, related_name="product"
+    )
     objects = ActiveQueryset.as_manager()
 
     def __str__(self):
@@ -68,36 +70,6 @@ class AttributeValue(models.Model):
         return f"{self.attribute.name}-{self.attribute_value}"
 
 
-class ProductLine(models.Model):
-    price = models.DecimalField(decimal_places=2, max_digits=5)
-    sku = models.CharField(max_length=100)
-    stock_qty = models.IntegerField()
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="product_line"
-    )
-    is_active = models.BooleanField(default=False)
-    order = OrderField(unique_for_field="product", blank=True)
-    attribute_value = models.ManyToManyField(
-        AttributeValue,
-        through="ProductlineAttributeValue",
-        related_name="product_line_attribute_value",
-    )
-    objects = ActiveQueryset.as_manager()
-
-    def clean(self, exclude=None):
-        qs = ProductLine.objects.filter(product=self.product)
-        for obj in qs:
-            if self.id != obj.id and self.order == obj.order:
-                raise ValidationError("Duplicate value.")
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super(ProductLine, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return str(self.sku)
-
-
 class ProductLineAttributeValue(models.Model):
     attribute_value = models.ForeignKey(
         AttributeValue,
@@ -105,7 +77,7 @@ class ProductLineAttributeValue(models.Model):
         related_name="product_attribute_value_av",
     )
     product_line = models.ForeignKey(
-        ProductLine,
+        "ProductLine",
         on_delete=models.CASCADE,
         related_name="product_attribute_value_pl",
     )
@@ -135,6 +107,36 @@ class ProductLineAttributeValue(models.Model):
         return super(ProductLineAttributeValue, self).save(*args, **kwargs)
 
 
+class ProductLine(models.Model):
+    price = models.DecimalField(decimal_places=2, max_digits=5)
+    sku = models.CharField(max_length=100)
+    stock_qty = models.IntegerField()
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="product_line"
+    )
+    is_active = models.BooleanField(default=False)
+    order = OrderField(unique_for_field="product", blank=True)
+    attribute_value = models.ManyToManyField(
+        AttributeValue,
+        through="ProductLineAttributeValue",
+        related_name="product_line_attribute_value",
+    )
+    objects = ActiveQueryset.as_manager()
+
+    def clean(self):
+        qs = ProductLine.objects.filter(product=self.product)
+        for obj in qs:
+            if self.id != obj.id and self.order == obj.order:
+                raise ValidationError("Duplicate value.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super(ProductLine, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.sku)
+
+
 class ProductImage(models.Model):
     alternative_text = models.CharField(max_length=100)
     url = models.ImageField(upload_to=None, default="test.jpg")
@@ -142,9 +144,8 @@ class ProductImage(models.Model):
         ProductLine, on_delete=models.CASCADE, related_name="product_image"
     )
     order = OrderField(unique_for_field="productline", blank=True)
-    objects = ActiveQueryset.as_manager()
 
-    def clean(self, exclude=None):
+    def clean(self):
         qs = ProductImage.objects.filter(productline=self.productline)
         for obj in qs:
             if self.id != obj.id and self.order == obj.order:
@@ -155,11 +156,11 @@ class ProductImage(models.Model):
         return super(ProductImage, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.url)
+        return str(self.order)
 
 
 class ProductType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     attribute = models.ManyToManyField(
         Attribute,
         through="ProductTypeAttribute",
@@ -175,12 +176,12 @@ class ProductTypeAttribute(models.Model):
     product_type = models.ForeignKey(
         ProductType,
         on_delete=models.CASCADE,
-        related_name="product_attribute_attribute_pt",
+        related_name="product_type_attribute_pt",
     )
     attribute = models.ForeignKey(
         Attribute,
         on_delete=models.CASCADE,
-        related_name="product_attribute_attribute_a",
+        related_name="product_type_attribute_a",
     )
 
     class Meta:
