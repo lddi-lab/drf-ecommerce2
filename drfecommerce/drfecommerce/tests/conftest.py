@@ -6,7 +6,6 @@ from .factories import CategoryFactory
 
 
 register(CategoryFactory)
-# register(BrandFactory)
 # register(ProductFactory)
 # register(ProductLineFactory)
 # register(ProductImageFactory)

@@ -2,8 +2,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Brand, Product
-from .serializers import CategorySerializer, BrandSerializer, ProductSerializer
+from .models import Category, Product
+from .serializers import CategorySerializer, ProductSerializer
 
 # from django.db import connection
 # from pygments import highlight
@@ -25,32 +25,19 @@ class CategoryViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 
-class BrandViewSet(viewsets.ViewSet):
-    """
-    A simple Viewset for viewing all brands
-    """
-
-    queryset = Brand.objects.all()
-
-    @extend_schema(responses=BrandSerializer)
-    def list(self, request):
-        serializer = BrandSerializer(self.queryset, many=True)
-        return Response(serializer.data)
-
-
 class ProductViewSet(viewsets.ViewSet):
     """
     A simple Viewset for viewing all products
     """
 
-    queryset = Product.objects.all().isactive()
+    queryset = Product.objects.all().is_active()
 
     lookup_field = "slug"
 
     def retrieve(self, request, slug=None):
         serializer = ProductSerializer(
             Product.objects.filter(slug=slug)
-            .select_related("category", "brand")
+            .select_related("category")
             .prefetch_related("product_line__product_image")
             .prefetch_related("product_line__attribute_value__attribute"),
             many=True,

@@ -46,7 +46,7 @@ class TestCategoryModel:
     def test_return_category_active_only_true(self, category_factory):
         category_factory(is_active=True)
         category_factory(is_active=False)
-        qs = Category.objects.isactive().count()
+        qs = Category.objects.is_active().count()
         assert qs == 1
 
     def test_return_category_active_only_false(self, category_factory):
@@ -54,12 +54,6 @@ class TestCategoryModel:
         category_factory(is_active=False)
         qs = Category.objects.count()
         assert qs == 2
-
-
-# class TestBrandModel:
-#     def test_str_method(self, brand_factory):
-#         obj = brand_factory(name="test_brand")
-#         assert obj.__str__() == "test_brand"
 
 
 # class TestProductModel:
