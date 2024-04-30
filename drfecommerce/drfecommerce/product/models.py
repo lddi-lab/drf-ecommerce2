@@ -5,7 +5,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from .fields import OrderField
 
 
-class ActiveQueryset(models.QuerySet):
+class IsActiveQueryset(models.QuerySet):
     def is_active(self):
         return self.filter(is_active=True)
 
@@ -15,7 +15,6 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=255)
     is_active = models.BooleanField(default=False)
     parent = TreeForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
-    objects = ActiveQueryset.as_manager()
 
     class MPTTMeta:
         order_insertion_by = ["name"]
@@ -23,20 +22,27 @@ class Category(MPTTModel):
     def __str__(self):
         return self.name
 
+    objects = IsActiveQueryset.as_manager()
+
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=255)
+    pid = models.SlugField(max_length=10)
     description = models.TextField(blank=True)
     is_digital = models.BooleanField(default=False)
     category = TreeForeignKey(
-        "Category", on_delete=models.SET_NULL, null=True, blank=True
+        "Category", on_delete=models.PROTECT, null=True, blank=True
     )
+    # product_type = models.ForeignKey(
+    #     "ProductType", on_delete=models.PROTECT, related_name="product"
+    # )
     is_active = models.BooleanField(default=False)
-    product_type = models.ForeignKey(
-        "ProductType", on_delete=models.PROTECT, related_name="product"
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
     )
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     def __str__(self):
         return self.name
@@ -111,7 +117,7 @@ class ProductLine(models.Model):
         through="ProductLineAttributeValue",
         related_name="product_line_attribute_value",
     )
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     def clean(self):
         qs = ProductLine.objects.filter(product=self.product)
