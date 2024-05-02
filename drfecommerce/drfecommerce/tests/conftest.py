@@ -7,6 +7,7 @@ from .factories import (
     ProductFactory,
     ProductLineFactory,
     ProductImageFactory,
+    ProductTypeFactory,
 )
 
 
@@ -14,7 +15,7 @@ register(CategoryFactory)
 register(ProductFactory)
 register(ProductLineFactory)
 register(ProductImageFactory)
-# register(ProductTypeFactory)
+register(ProductTypeFactory)
 # register(AttributeFactory)
 # register(AttributeValueFactory)
 

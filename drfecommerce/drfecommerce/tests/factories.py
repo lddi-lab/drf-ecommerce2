@@ -5,6 +5,7 @@ from drfecommerce.product.models import (
     Product,
     ProductLine,
     ProductImage,
+    ProductType,
 )
 
 
@@ -14,6 +15,13 @@ class CategoryFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: "Category_%d" % n)
     slug = factory.Sequence(lambda n: "test_slug_%d" % n)
+
+
+class ProductTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProductType
+
+    name = factory.Sequence(lambda n: "test_type_name_%d" % n)
 
 
 class ProductFactory(factory.django.DjangoModelFactory):
@@ -27,7 +35,7 @@ class ProductFactory(factory.django.DjangoModelFactory):
     is_digital = False
     category = factory.SubFactory(CategoryFactory)
     is_active = True
-    # product_type = factory.SubFactory(ProductTypeFactory)
+    product_type = factory.SubFactory(ProductTypeFactory)
 
 
 class ProductLineFactory(factory.django.DjangoModelFactory):
@@ -40,6 +48,7 @@ class ProductLineFactory(factory.django.DjangoModelFactory):
     product = factory.SubFactory(ProductFactory)
     is_active = True
     weight = 100
+    product_type = factory.SubFactory(ProductTypeFactory)
 
     # @factory.post_generation
     # def attribute_value(self, create, extracted, **kwargs):
@@ -56,6 +65,12 @@ class ProductImageFactory(factory.django.DjangoModelFactory):
     url = "test.jpg"
     product_line = factory.SubFactory(ProductLineFactory)
 
+    # @factory.post_generation
+    # def attribute(self, create, extracted, **kwargs):
+    #     if not create or not extracted:
+    #         return
+    #     self.attribute.add(*extracted)
+
 
 # class AttributeFactory(factory.django.DjangoModelFactory):
 #     class Meta:
@@ -63,19 +78,6 @@ class ProductImageFactory(factory.django.DjangoModelFactory):
 
 #     name = "attribute_name_test"
 #     description = "attr_description_test"
-
-
-# class ProductTypeFactory(factory.django.DjangoModelFactory):
-#     class Meta:
-#         model = ProductType
-
-#     name = "test_type"
-
-#     @factory.post_generation
-#     def attribute(self, create, extracted, **kwargs):
-#         if not create or not extracted:
-#             return
-#         self.attribute.add(*extracted)
 
 
 # class AttributeValueFactory(factory.django.DjangoModelFactory):
