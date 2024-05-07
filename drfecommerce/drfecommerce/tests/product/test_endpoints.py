@@ -11,7 +11,7 @@ class TestCategoryEndpoints:
 
     def test_category_get(self, category_factory, api_client):
         # Arrange
-        category_factory.create_batch(4)
+        category_factory.create_batch(4, is_active=True)
         # Act
         response = api_client().get(self.endpoint)
         # Assert
