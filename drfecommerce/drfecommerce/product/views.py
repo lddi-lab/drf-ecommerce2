@@ -1,15 +1,15 @@
+from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
 
-# from django.db import connection
-# from pygments import highlight
-# from pygments.formatters import TerminalFormatter
-# from pygments.lexers import SqlLexer
-# from sqlparse import format
+from .models import Category, Product, ProductImage, ProductLine
+from .serializers import (
+    CategorySerializer,
+    ProductCategorySerializer,
+    ProductSerializer,
+)
 
 
 class CategoryViewSet(viewsets.ViewSet):
@@ -36,25 +36,15 @@ class ProductViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, slug=None):
         serializer = ProductSerializer(
-            Product.objects.filter(slug=slug)
-            .select_related("category")
-            .prefetch_related("product_line__product_image")
-            .prefetch_related("product_line__attribute_value__attribute"),
+            self.queryset.filter(slug=slug)
+            .prefetch_related(Prefetch("attribute_value__attribute"))
+            .prefetch_related(Prefetch("product_line__product_image"))
+            .prefetch_related(Prefetch("product_line__attribute_value__attribute")),
             many=True,
         )
         data = Response(serializer.data)
 
-        # q = list(connection.queries)
-        # print(len(q))
-        # for qs in q:
-        #     sqlformatted = format(str(qs["sql"]), reindent=True)
-        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
         return data
-
-    @extend_schema(responses=ProductSerializer)
-    def list(self, request):
-        serializer = ProductSerializer(self.queryset, many=True)
-        return Response(serializer.data)
 
     @action(
         methods=["get"],
@@ -65,7 +55,17 @@ class ProductViewSet(viewsets.ViewSet):
         """
         An endpoint to return products by category
         """
-        serializer = ProductSerializer(
-            self.queryset.filter(category__slug=slug), many=True
+        serializer = ProductCategorySerializer(
+            self.queryset.filter(category__slug=slug)
+            .prefetch_related(
+                Prefetch("product_line", queryset=ProductLine.objects.order_by("order"))
+            )
+            .prefetch_related(
+                Prefetch(
+                    "product_line__product_image",
+                    queryset=ProductImage.objects.filter(order=1),
+                )
+            ),
+            many=True,
         )
         return Response(serializer.data)

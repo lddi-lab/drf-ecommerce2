@@ -3,12 +3,12 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from .models import (
+    Attribute,
+    AttributeValue,
     Category,
     Product,
     ProductImage,
     ProductLine,
-    AttributeValue,
-    Attribute,
     ProductType,
 )
 
@@ -26,6 +26,15 @@ class EditLinkInline(object):
             return ""
 
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+
+
+class ProductLineInline(EditLinkInline, admin.TabularInline):
+    model = ProductLine
+    readonly_fields = ("edit",)
+
+
 class AttributeValueInline(admin.TabularInline):
     model = AttributeValue.product_line_attribute_value.through
 
@@ -34,25 +43,16 @@ class AttributeValueProductInline(admin.TabularInline):
     model = AttributeValue.product_attr_value.through
 
 
-class ProductLineInLine(EditLinkInline, admin.TabularInline):
-    model = ProductLine
-    readonly_fields = ("edit",)
-
-
 class ProductAdmin(admin.ModelAdmin):
     inlines = [
-        ProductLineInLine,
+        ProductLineInline,
         AttributeValueProductInline,
     ]
 
 
-class ProductImageInLine(admin.TabularInline):
-    model = ProductImage
-
-
 class ProductLineAdmin(admin.ModelAdmin):
     inlines = [
-        ProductImageInLine,
+        ProductImageInline,
         AttributeValueInline,
     ]
 
@@ -67,9 +67,9 @@ class ProductTypeAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(Category)
-admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductLine, ProductLineAdmin)
+admin.site.register(Product, ProductAdmin)
+admin.site.register(Category)
 admin.site.register(Attribute)
-admin.site.register(AttributeValue)
 admin.site.register(ProductType, ProductTypeAdmin)
+admin.site.register(AttributeValue)
